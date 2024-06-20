@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.46/esri/css/esri.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="style.css" rel="stylesheet">
+    <title>Contact</title>
+</head>
+<body>
+    <header>
+        <ul>
+            <li class = 'header-left'><a id="home" href="home.html">Home</a></li>
+            <li class = 'header-left'><a id="about" href="about.html">About</a></li>
+            <li class = 'header-left'><a id="contact" class="activno" href="contact.html">Contact</a></li>
+            <li class = 'header-right'><a href="#"><img src="images/albania.png" onclick="setLanguage('albanian')"></a></li>
+            <li class = 'header-right'><a href="#"><img src="images/macedonia.png" onclick="setLanguage('macedonian')"></a></li>
+            <li class = 'header-right'><a href="#"><img src="images/united kingdom.png" onclick="setLanguage('english')"></a></li>
+        </ul>
+    </header>
+    <br>
+
+    <div class="form">
+        <form action="https://formsubmit.co/ivonatevceva23@gmail.com" method="post">
+            <label id="nameContact" style="font-size: 18px; margin-left: 5px;">Name</label><br>
+            <input style="margin-left: 5px;" type="text" id="fname" name="fname" placeholder="John Doe" required><br><br><br>
+            <label id="emailContact" style="font-size: 18px; margin-left: 5px;">Email</label><br>
+            <input style="margin-left: 5px;" type="email" id="email" name="email" placeholder="johndoe@example.com" required><br><br><br>
+            <label id="subjectContact" style="font-size: 18px; margin-left: 5px;">Subject</label><br>
+            <input style="margin-left: 5px;" type="text" id="subject" name="subject" required><br><br><br>
+            <label id="messageContact" style="font-size: 18px; margin-left: 5px;">Message</label><br>
+            <textarea style="margin-left: 5px;" id="message" name="message" rows="5" cols="30" required></textarea><br><br>
+            <button id="submitContact" style="margin-left: 5px;" id="btn">Submit</button>
+        </form>
+    </div>
+
+    <div>
+        <form style="float: right; width: 25%; margin-right: 19%;">
+            <div id = "map" style="border-style:solid; border-width: 5px; width: auto;">
+                <script src="https://js.arcgis.com/3.46/"></script>
+                <script>
+                var map;
+        
+                require(["esri/map", "dojo/domReady!"], function(Map) {
+                    map = new Map("map", {
+                    basemap: "osm",  // Podlogata na mapata. For full list of pre-defined basemaps, navigate to http://arcg.is/1JVo6Wd
+                    center: [21.43141, 41.99646], // longitude, latitude
+                    zoom: 15
+                    });
+                });
+                </script>
+            </div>
+            <p id="pContact" style="text-align: center; margin-top: 0;">Betting shops in Skopje</p><br>
+            <form>
+                <div>
+                    <label><strong id="addressStrong">Address:</strong></label>
+                    <label id="addressContact"> Bulevar Sv.Kliment Ohridski 58b/2-4, Skopje, North Macedonia</label><br><br>
+                    <label><strong id="strongContact">Opening Hours:</strong></label>
+                    <label id="vremeContact"> Mon-Fri, 8:00am-4:30pm</label><br><br>
+                    <label><strong id="telephone">Telephone:</strong> +389 71234567</label><br><br>
+                    <label><strong id="mailContact">Email:</strong> ivonatevceva23@gmail.com</label><br><br>
+                    <label><strong id="webContact">Web:</strong> http://www.katastar.gov.mk</label><br><br>
+                </div>   
+            </form>
+            
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-left">
+            <span id="pFooter">Get connected with us on social networks:</span>
+        </div>
+        <div class="footer-right">
+            <a href="https://www.facebook.com/ivona.tevceva" class="icons fa fa-facebook"></a>
+            <a href="https://www.youtube.com/channel/UCR0X-Hm4_OrcfkGtbTRV_dQ" class="icons fa fa-youtube"></a>
+            <a href="https://www.instagram.com/tevchevaaaa/" class="icons fa fa-instagram"></a>
+            <a href="https://www.pinterest.com/itevceva/" class="icons fa fa-pinterest"></a>
+            <a href="https://myaccount.google.com/?hl=mk&utm_source=OGB&utm_medium=act" class="icons fa fa-google"></a>
+        </div>
+        <br>
+        <div id="shop" style="background-color: rgba(0, 0, 0, 0.05); text-align: center; width: 100%;"> © 2024 | Betting shops in Skopje</div>
+    </footer>
+    
+    <script>
+        function setLanguage(language) {
+            localStorage.setItem('language', language);
+            if (language === 'macedonian') {
+                translateToMacedonian();
+            } else if (language === 'english') {
+                translateToEnglish();
+            } else if (language === 'albanian') {
+                translateToAlbanian();
+            }
+
+            // Transfer language choice to other HTML files
+            var links = document.querySelectorAll('a[id="home"], a[id="about"], a[id="contact"]');
+            var url = new URL(window.location.href);
+            links.forEach(function(link) {
+                var newUrl = new URL(link.href, url);
+                newUrl.searchParams.set('language', language);
+                link.href = newUrl.href;
+            });
+        }
+
+        function translateToMacedonian() {
+            // Translate content to Macedonian
+            // Header elements
+            document.getElementById('home').textContent = "Дома";
+            document.getElementById('about').textContent = "За нас";
+            document.getElementById('contact').textContent = "Контакт";
+
+            // Contact form elements
+            document.getElementById('nameContact').textContent = "Име";
+            document.getElementById('emailContact').textContent = "Емаил";
+            document.getElementById('subjectContact').textContent = "Наслов";
+            document.getElementById('messageContact').textContent = "Порака";
+            document.getElementById('submitContact').textContent = "Поднеси";
+
+            document.getElementById('pContact').textContent = "Спортски обложувалници во Скопје";
+
+            // Address and contact info elements
+            document.getElementById('addressStrong').textContent = "Адреса: ";
+            document.getElementById('addressContact').textContent = "Булевар Свети Климент Охридски 58б/2-4 MK, Скопје, Северна Македонија";
+            document.getElementById('strongContact').textContent = "Работно време: ";
+            document.getElementById('vremeContact').textContent = "Понеделник - Петок, 08:00 - 16:30";
+            document.getElementById('telephone').textContent = "Телефон: ";
+            document.getElementById('mailContact').textContent = "Емаил: ";
+            document.getElementById('webContact').textContent = "Веб: ";
+
+            // Footer elements
+            //document.querySelector('.footer').innerHTML.getElementById('pFooter').textContent = "Поврзете се со нас на социјалните мрежи:";
+            document.getElementById('pFooter').textContent = "Поврзете се со нас на социјалните мрежи:";
+            document.getElementById('shop').textContent = "© 2024 | Спортски обложувалници во Скопје";
+        }
+
+        function translateToEnglish(){
+            document.getElementById('home').textContent = "Home";
+            document.getElementById('about').textContent = "About";
+            document.getElementById('contact').textContent = "Contact";
+
+            // Contact form elements
+            document.getElementById('nameContact').textContent = "Name";
+            document.getElementById('emailContact').textContent = "Email";
+            document.getElementById('subjectContact').textContent = "Subject";
+            document.getElementById('messageContact').textContent = "Message";
+            document.getElementById('submitContact').textContent = "Submit";
+
+            document.getElementById('pContact').textContent = "Betting shops in Skopje";
+
+            // Address and contact info elements
+            document.getElementById('addressStrong').textContent = "Address: ";
+            document.getElementById('addressContact').textContent = "Bulevar Sv.Kliment Ohridski 58b/2-4, Skopje, North Macedonia";
+            document.getElementById('strongContact').textContent = "Opening Hours: ";
+            document.getElementById('vremeContact').textContent = "Mon - Fri, 8am - 4:30pm";
+            document.getElementById('telephone').textContent = "Telephone: ";
+            document.getElementById('mailContact').textContent = "Email: ";
+            document.getElementById('webContact').textContent = "Web: ";
+
+            // Footer elements
+            document.getElementById('pFooter').textContent = "Connect with us on social networks:";
+            document.getElementById('shop').textContent = "© 2024 | Betting shops in Skopje";
+        }
+
+        function translateToAlbanian() {
+            // Translate content to Albanian
+            // Header elements
+            document.getElementById('home').textContent = "Kreu";
+            document.getElementById('about').textContent = "Rreth Nesh";
+            document.getElementById('contact').textContent = "Kontakt";
+
+            // Contact form elements
+            document.getElementById('nameContact').textContent = "Emri";
+            document.getElementById('emailContact').textContent = "Email";
+            document.getElementById('subjectContact').textContent = "Subjekti";
+            document.getElementById('messageContact').textContent = "Mesazhi";
+            document.getElementById('submitContact').textContent = "Dërgo";
+
+            // Address and contact info elements
+            document.getElementById('pContact').textContent = "Lojëra të fatit në Shkup";
+
+            // Footer elements
+            document.getElementById('addressStrong').textContent = "Adresa: ";
+            document.getElementById('addressContact').textContent = "Bulevardi i Shenjtë Kliment Ohridski 58b/2-4, Shkup, Maqedonia e Veriut";
+            document.getElementById('strongContact').textContent = "Orët e punës: ";
+            document.getElementById('vremeContact').textContent = "E Hënë - E Premte, 08:00 - 16:30";
+            document.getElementById('telephone').textContent = "Telefoni: ";
+            document.getElementById('mailContact').textContent = "Email: ";
+            document.getElementById('webContact').textContent = "Web: ";
+
+            // Footer elements
+            document.getElementById('pFooter').textContent = "Lidhuni me ne në rrjetet sociale:";
+            document.getElementById('shop').textContent = "© 2024 | Lojëra të fatit në Shkup";
+        }
+    </script>
+</body>
+</html>

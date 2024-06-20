@@ -1,0 +1,1689 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <link href="./style.css" rel="stylesheet">
+
+    <title>Betting shops in Skopje</title>
+
+    <script>
+    $( document ).ready(function() {
+        let view;
+        require(["esri/Map",
+                "esri/views/MapView",
+                "esri/layers/FeatureLayer",
+                "esri/geometry/support/webMercatorUtils",
+                "esri/widgets/Search",
+                "esri/widgets/Home",
+                "esri/widgets/Fullscreen",
+                "esri/widgets/Locate",
+                "esri/widgets/LayerList",
+                "esri/widgets/BasemapGallery",
+                "esri/widgets/Bookmarks",
+                "esri/widgets/Legend",
+                "esri/widgets/CoordinateConversion",
+                "esri/widgets/Print",
+                "esri/layers/GraphicsLayer",
+                "esri/widgets/Sketch",
+                "esri/widgets/Measurement",
+                "esri/PopupTemplate",
+                "esri/widgets/Expand"           
+            ], 
+                (Map, MapView, FeatureLayer, webMercatorUtils, Search, Home, Fullscreen, Locate, LayerList, BasemapGallery, Bookmarks, Legend, CoordinateConversion, Print, GraphicsLayer, Sketch, Measurement, PopupTemplate, Expand) => {
+
+            const map = new Map({
+            basemap: "streets-vector"
+            });
+
+            view = new MapView({
+            container: "viewDiv",
+            map: map,
+            zoom: 13,
+            center: [21.43141, 41.99646],
+            });
+
+            // Create a PopupTemplate
+            /* PopupTemplate е објект што се креира со помош на конструкторот PopupTemplate. 
+            Овој објект го дефинира изгледот на popup-от што се појавува кога ќе се кликне на елемент на мапата кој е поврзан со FeatureLayer.
+            popupTemplate се користи за да се прикажат две полиња од податоците на FeatureLayer: "Ime" (Name) и "Adresa" (Address).*/
+            var popupTemplate = new PopupTemplate({
+                title: "{Ime}",
+                content: [{ /* content делот од popupTemplate дефинира што се прикажува во popup-от. 
+                  Во овој случај, се користи типот на содржина "fields" за да се прикажат полињата од податоците.*/
+                    type: "fields",
+                    fieldInfos: [{/* fieldInfos дефинира како да се прикажат полињата. За секое поле, fieldName го означува името на полето во 
+                      FeatureLayer соодветно, а label го означува текстот што се појавува како наслов на полето во popup-от.*/
+                        fieldName: "Ime",
+                        label: "Name"
+                    }, {
+                        fieldName: "Adresa",
+                        label: "Address"
+                    }]
+                }]
+            });
+
+            const sloj = new FeatureLayer({
+                url: "https://app.gdi.mk:6443/arcgis/rest/services/Studenti/Kladilnici_Kazina/MapServer/1",
+                popupTemplate: popupTemplate
+                /* popupTemplate се назначува на FeatureLayer-от преку неговата својство popupTemplate. 
+                Кога ќе се кликне на елемент на мапата што припаѓа на овој FeatureLayer, 
+                popup-от ќе го користи дефинираниот popupTemplate за да го прикаже соодветниот контент.*/
+            });
+
+            map.add(sloj);
+
+            const searchWidget = new Search({
+              view: view
+            });
+            const searchExpand = new Expand({
+              expandIcon: "search",  // see https://developers.arcgis.com/calcite-design-system/icons/
+              view: view,
+              content: searchWidget
+            });
+            view.ui.add(searchExpand, "top-left");
+
+
+
+            let homeWidget = new Home({
+              view: view
+            });
+
+            // adds the home widget to the top left corner of the MapView
+            view.ui.add(homeWidget, "top-left");
+
+
+
+            let locate = new Locate({
+              view: view
+            });
+            view.ui.add(locate, "top-left");
+
+
+
+            const bookmarks = new Bookmarks({
+              view: view,
+              visibleElements: {
+                  addBookmarkButton: true,
+                  editBookmarkButton: true
+              },
+              draggable: true,
+              // whenever a new bookmark is created, a 100x100 px
+              // screenshot of the view will be taken and the rotation, scale, and extent
+              // of the view will not be set as the viewpoint of the new bookmark
+              defaultCreateOptions: {
+                  takeScreenshot: true,
+                  captureViewpoint: false,
+                  captureTimeExtent: false, // the time extent of the view will not be saved in the bookmark
+                  screenshotSettings: {
+                      width: 100,
+                      height: 100
+                  }
+              }
+          });
+
+          const bookmarksExpand = new Expand({
+              expandIcon: "bookmark",
+              view: view,
+              content: bookmarks,
+              expandTooltip: "Bookmarks"
+          });
+
+          view.ui.add(bookmarksExpand, "top-left");
+
+
+
+
+            let basemapGallery = new BasemapGallery({
+              view: view
+            });
+            const basemapGalleryExpand = new Expand({
+              expandIcon: "basemap",
+              view: view,
+              content: basemapGallery
+            });
+            view.ui.add(basemapGalleryExpand, "top-left");
+
+
+
+
+            let layerList = new LayerList({
+              view: view
+            });
+            const layerListExpand = new Expand({
+              expandIcon: "view-hide",
+              view: view,
+              content: layerList
+            });
+            view.ui.add(layerListExpand, "top-left");
+
+
+
+
+            let legend = new Legend({
+              view: view
+            });
+            view.ui.add(legend, "bottom-left");
+            
+
+
+
+            let ccWidget = new CoordinateConversion({
+              view: view
+            });
+            // Adds widget in the bottom left corner of the view
+            view.ui.add(ccWidget, "top-right");
+
+
+
+            // define the GraphicsLayer
+            const graphicsLayer = new GraphicsLayer();
+            const sketch = new Sketch({
+              layer: graphicsLayer,
+              view: view,
+              creationMode: "update"
+            });
+            view.ui.add(sketch, "top-right");
+
+
+
+            fullscreen = new Fullscreen({
+              view: view
+            });
+            view.ui.add(fullscreen, "top-right");
+
+
+
+            // Create the Measurement widget with both distance and area tools enabled
+            var measurement = new Measurement({
+                view: view,
+                activeTool: "area" // area
+            });
+
+            // Create an Expand widget to contain the Measurement widget
+            var measurementExpand = new Expand({
+                view: view,
+                content: measurement,
+                expandIcon: "measure-area", 
+                expandTooltip: "Measure"
+            });
+
+            // Add the Measurement widget to the view's UI
+            view.ui.add(measurementExpand, "top-right");
+
+        // Create the Measurement widget with both distance and area tools enabled
+       /* var measurement1 = new Measurement({
+                view: view,
+                activeTool: "distance" // distance
+            });
+
+            // Create an Expand widget to contain the Measurement widget
+            var measurementExpand1 = new Expand({
+                view: view,
+                content: measurement1,
+                expandIcon: "measure-line", 
+                expandTooltip: "Measure"
+            });
+
+            // Add the Measurement widget to the view's UI
+            view.ui.add(measurementExpand1, "top-right");
+
+            */
+
+            view.when(() => {
+              const print = new Print({
+                view: view,
+                // specify your own print service
+                printServiceUrl:
+                  "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+              });
+              const printExpand = new Expand({
+                expandIcon: "print",
+                view: view,
+                content: print
+              });
+              view.ui.add(printExpand, "top-right");
+            });
+    
+
+            $('#searchTable').on('click', 'tr', function () {
+              var xy = $(this).find("td:first").text();
+              var startIndex = xy.indexOf('(') + 1; // najdi go indeksot na (
+                  var endIndex = xy.indexOf(','); // najdi go indeksot na ,
+                  var firstElement = parseFloat(xy.substring(startIndex, endIndex)); // izvlechete ja podnizata pomegju ( i ,
+                  /* xy.substring(startIndex, endIndex) izvlekuva del od nizata xy pochnuvajkji od startIndex do (no ne vkluchuvajkji go) endIndex */
+                  /* parseFloat() analizira vrednost kako niza i go vrakja prviot broj od nizata */
+
+              var startIndex1 = xy.indexOf(',') + 1; // najdi go indeksot na ,
+              var endIndex1 = xy.indexOf(')'); // najdi go indeksot na )
+              var secondElement = parseFloat(xy.substring(startIndex1, endIndex1)); // izvlechete ja podnizata pomegju , i )
+              console.log("First element from XY array: ", firstElement);
+              console.log("Second element from XY array: ", secondElement);
+              var coordinates = webMercatorUtils.xyToLngLat(firstElement, secondElement);
+          
+              // Zoom to the clicked coordinates
+              view.goTo({
+                  center: [coordinates[0], coordinates[1]],
+                  zoom: 18
+              });
+            });
+      });
+
+
+      
+    });
+
+    </script>
+  </head>
+
+  <body>
+    <header>
+        <ul>
+            <li class = 'header-left'><a id="home" class="activno" href="home.html">Home</a></li>
+            <li class = 'header-left'><a id="about" href="about.html">About</a></li>
+            <li class = 'header-left'><a id="contact" href="contact.html">Contact</a></li>
+            <li class = 'header-right'><a onclick="setLanguage('albanian')"><img src="images/albania.png"></a></li>
+            <li class = 'header-right'><a onclick="setLanguage('macedonian')"><img src="images/macedonia.png" ></a></li>
+            <li class = 'header-right'><a onclick="setLanguage('english')"><img src="images/united kingdom.png" ></a></li>
+        </ul>
+    </header>
+
+    <script>
+    
+      function setLanguage(language) {
+            localStorage.setItem('language', language);
+            if (language === 'macedonian') {
+                translateToMacedonian();
+            } else if (language === 'english') {
+                translateToEnglish();
+            } else if (language === 'albanian') {
+                translateToAlbanian();
+            }
+
+            // Transfer language choice to other HTML files
+            var links = document.querySelectorAll('a[id="home"], a[id="about"], a[id="contact"]');
+            var url = new URL(window.location.href);
+            links.forEach(function(link) {
+                var newUrl = new URL(link.href, url);
+                newUrl.searchParams.set('language', language);
+                link.href = newUrl.href;
+            });
+        }
+
+      function translateToMacedonian() {
+      // Header elements
+      document.getElementById('home').textContent = "Дома";
+      document.getElementById('about').textContent = "За нас";
+      document.getElementById('contact').textContent = "Контакт";
+     
+      document.getElementById('searchInput').placeholder = "Пребарај..."
+      document.getElementById('searchButton').innerHTML = "Пребарај <i class='fa fa-search'>";
+      document.getElementById('galleryButton').innerHTML = "Галерија <i class='fa fa-picture-o'>";
+      document.getElementById('objectId').innerHTML = "Идентификациски број <i class='fa fa-sort'> ";
+      document.getElementById('name').innerHTML = "Име <i class='fa fa-sort'> ";
+      document.getElementById('address').innerHTML = "Адреса <i class='fa fa-sort'> ";
+      document.getElementById('xy').innerHTML = "XY <i class='fa fa-sort'> ";  
+      document.getElementById('exportButton').innerHTML = "Преземи во Excel <i class='fa fa-file-excel-o'>";
+      
+      // Footer elements
+      
+      document.getElementById('pFooter').textContent = "Поврзете се со нас на социјалните мрежи:";
+      document.getElementById('shop').textContent = "© 2024 | Спортски обложувалници во Скопје";
+      
+      // widgets
+      // Define the Macedonian translation
+
+/*
+      // Select the <p> element inside the container with class "esri-measurement-widget-content__hint-text"
+      const pElement = document.querySelector('.esri-measurement-widget-content__hint-text');
+
+      // Set its text content to the Macedonian translation
+      pElement.innerHTML = 'Започнете да мерите со кликнување на картата за да ја поставите вашата прва точка';
+*/
+
+      document.querySelector('.esri-input.esri-search__input').placeholder = "Најди адреса или место";
+      document.querySelector('.esri-input.esri-search__input').title = "Најди адреса или место";
+      document.querySelector('.esri-search__submit-button.esri-widget--button').title = "Пребарај";
+      document.querySelector('.esri-search__no-value-text').innerHTML = "Ве молиме внесете термин за пребарување.";
+
+      // Преводи за текстот на копчето
+      const lokacija = {
+            macedonian: "Најдете ја мојата локација",
+            albanian: "Gjeni vendndodhjen time",
+            english: "Find my location"
+        };
+
+        // Функција за поставување на преводот на копчето
+        function lokacijaTranslation(language) {
+            const button = document.querySelector('.esri-locate .esri-widget--button');
+            if (button) {
+                button.textContent = lokacija[language];
+            }
+        }
+
+        // Пример како да ја поставите македонската верзија на текстот на копчето
+        lokacijaTranslation('macedonian');
+
+      // Преводи за текстот на копчето
+      const translations = {
+          macedonian: "Стандарден поглед на мапата",
+          albanian: "Pamje e zakonshme e hartës",
+          english: "Default view map"
+      };
+
+      // Функција за поставување на преводот на копчето
+      function setButtonTranslation(language) {
+          const button = document.querySelector('.esri-home .esri-widget--button');
+          if (button) {
+              button.textContent = translations[language];
+          }
+      }
+
+      // Пример како да ја поставите македонската верзија на текстот на копчето
+      setButtonTranslation('macedonian');     
+
+
+      document.querySelector('.esri-layer-list__item-content.esri-layer-list__item-content').textContent = 'Кладилници и казина под 400 метри';
+      document.querySelector('.esri-widget__heading.esri-legend__service-label').innerHTML = 'Кладилници и казина под 400 метри';
+      /*document.querySelector('.esri-coordinate-conversion__select-primary').title = 'Додадете конверзија';
+      // Select the "Add conversion" option element
+      const addConversionOption = document.querySelector('.esri-select.esri-coordinate-conversion__select-primary option[value=""]');
+      // Set its text content to the Macedonian translation
+      addConversionOption.innerText = 'Додадете конверзија';
+      */
+
+      var zoomin = document.querySelector('.esri-widget--button');
+      zoomin.title = 'Зголеми';
+
+     /*
+      const macedonianTranslations = [
+        'Внесете координати',
+        'Режим на снимање',
+        'Поставки за форматирање'
+      ];
+
+      // Select all li elements inside the ul with class "esri-coordinate-conversion__tools"
+      const liElements = document.querySelectorAll('.esri-coordinate-conversion__tools li');
+
+      // Loop through each li element and set event listeners for hover
+      liElements.forEach((li, index) => {
+        // Set initial title attribute to show icon
+        li.title = ''; // Remove default browser tooltip
+
+        // Add event listener for mouse enter
+        li.addEventListener('mouseenter', () => {
+          li.title = macedonianTranslations[index]; // Change title on hover
+        });
+
+        // Add event listener for mouse leave to revert to icon
+        li.addEventListener('mouseleave', () => {
+          li.title = ''; // Revert to icon on mouse leave
+        });
+      });
+    */
+
+
+      // Define Macedonian translations for the specified titles
+      const macedonianTranslations = [
+          'Внесете координати',
+          'Режим на снимање',
+          'Поставки за форматирање'
+      ];
+
+      // Select only the <li> elements inside the specified class and exclude the first one
+      const liElements = document.querySelectorAll('.esri-coordinate-conversion__row .esri-coordinate-conversion__tools li:nth-child(n+2)');
+
+      // Update titles for the specified <li> elements
+      liElements.forEach((li, index) => {
+          li.title = macedonianTranslations[index]; // Update title with Macedonian translation
+      });
+
+
+
+
+
+      // Definirajte makedonski prevodi za elementite
+      const bookmarkTranslations = {
+          heading: 'Нема обележувања',
+          description: 'Додадете обележувања на вашата карта и тие ќе се појават тука.',
+          //buttonText: 'Додај'
+      };
+
+      // Zemi go div elementot koristejki querySelector
+      const emptyDivElement = document.querySelector('.esri-widget__content--empty');
+
+      // Proveri dali elementot e najden
+      if (emptyDivElement) {
+          // Zemi go h2 elementot koristejki querySelector
+          const headingElement = emptyDivElement.querySelector('h2');
+
+          // Postavi ja makedonskata prevod za naslovot
+          if (headingElement) {
+              headingElement.textContent = bookmarkTranslations.heading;
+          }
+
+          // Zemi go p elementot koristejki querySelector
+          const descriptionElement = emptyDivElement.querySelector('p');
+
+          // Postavi ja makedonskata prevod za opisot
+          if (descriptionElement) {
+              descriptionElement.textContent = bookmarkTranslations.description;
+          }
+      } else {
+          console.error("Div element with class 'esri-widget__content--empty' not found.");
+      }
+
+      // Define translations for the button titles
+      const sketchTranslations = {
+          macedonian: {
+              "Select by rectangle": "Избери со правоаголник",
+              "Select by lasso": "Избери со ласо"
+          },
+          albanian: {
+              "Select by rectangle": "Zgjidh me drejtkëndësh",
+              "Select by lasso": "Zgjidh me lasso"
+          }
+      };
+
+
+
+      // Define the translation for "Select Feature" in Macedonian
+      const sketchTranslation = "Избери објект";
+
+      // Find the <calcite-action> element with the title "Select feature"
+      const selectFeatureButton = document.querySelector('calcite-action[title="Select feature"]');
+      if (selectFeatureButton) {
+          // Update the title attribute to the Macedonian translation
+          selectFeatureButton.setAttribute('title', sketchTranslation);
+      }
+
+
+      // Function to set button translations based on the selected language
+      function setSketchTranslations(language) {
+          // Select the container of the buttons
+          const container = document.querySelector('.esri-selection-toolbar__container');
+          if (container) {
+              // Select all calcite-action elements within the container
+              const buttons = container.querySelectorAll('calcite-action');
+              // Loop through each button
+              buttons.forEach(button => {
+                  // Get the title of the button
+                  const title = button.getAttribute('title');
+                  // Get the translation for the current language
+                  const translation = sketchTranslations[language][title];
+                  // If translation exists, set it as the button title
+                  if (translation) {
+                      button.setAttribute('title', translation);
+                  }
+              });
+          }
+      }
+
+      // Example: Set Macedonian translations for the buttons
+      setSketchTranslations('macedonian');
+
+
+      // Definirajte prevod za naslov dugmeta
+      const settingSketch = {
+          macedonian: {
+              "Settings": "Подесувања"
+          }
+      };
+
+      // Funkcija za postavljanje prevoda na dugme
+      function setTranslation(language) {
+          const action = document.querySelector('.esri-sketch__section calcite-action[title="Settings"]');
+          if (action) {
+              action.setAttribute('title', settingSketch[language]["Settings"]);
+          }
+      }
+
+      // Postavite makedonski prevod za dugme
+      setTranslation('macedonian');
+
+
+
+
+      // Преводи за насловите на копчињата
+      const drawTranslations = {
+          "Draw a point": "Нацртајте точка",
+          "Draw a polyline": "Нацртајте полилинија",
+          "Draw a polygon": "Нацртајте многуаголник",
+          "Draw a rectangle": "Нацртајте правоаголник",
+          "Draw a circle": "Нацртајте круг",
+          "Undo": "Врати",
+          "Redo": "Повтори"
+      };
+
+      // Преведи ги копчињата користејќи querySelector
+      function translateButtons() {
+          const buttonSections = document.querySelectorAll('.esri-sketch__section.esri-sketch__tool-section[role="menu"]');
+          buttonSections.forEach(section => {
+              const buttons = section.querySelectorAll('calcite-action');
+              buttons.forEach(button => {
+                  const title = button.getAttribute('title');
+                  if (drawTranslations[title]) {
+                      button.setAttribute('title', drawTranslations[title]);
+                  }
+              });
+          });
+      }
+
+      // Изврши ја функцијата за превод на копчињата
+      translateButtons();
+
+
+        function prevediEl() {
+        // Преведи ги елементите со querySelector
+        const naslovEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(1) calcite-label');
+        const shablonEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(2) calcite-label');
+        const formatEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(3) calcite-label');
+
+        // Преведи ги текстовите на македонски
+        naslovEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Наслов<calcite-input alignment="start" number-button-type="vertical" scale="m" status="idle" type="text" placeholder="Наслов на датотеката"></calcite-input></calcite-label></div>';
+        shablonEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Шаблон<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single" scale="m" status="idle" placeholder="Избери шаблон"><calcite-combobox-item aria-hidden="true" guid="ac877623-b6bd-82ac-5fbc-efb59fe97789" text-label="A3 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3a5ef62c-675e-dd17-99fb-9a8ac81a3e15" text-label="A3 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="56b8c836-a2c1-2f7b-9b3b-6b718fce7d7e" text-label="A4 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="57709eaa-493a-5d63-ee84-4177a699a2d9" text-label="A4 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c1d4a18b-5751-0237-f0bc-9bc4a4a606bd" text-label="A4 Layout DynTxtElm Basic" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c4cc0ea5-e7d3-ab2f-9c6b-f6d833c2902e" text-label="A4 Layout DynTxtElm Basic Count MultipleLayers" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="ed11f4f9-08db-2ca3-fb95-1f39b20325c1" text-label="Letter ANSI A landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d9b37b6-f64c-72c0-022e-d2a3ca2a8a39" text-label="Letter ANSI A portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="f4c453fa-5de3-6258-fe1a-6d73162334c3" text-label="Tabloid ANSI B landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="08bdecdd-2a7d-eab4-e7ca-c516cc7e493a" text-label="Tabloid ANSI B portrait" selection-mode="single"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+        formatEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Формат на датотека<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single-persist" scale="m" status="idle" placeholder="Изберете формат"><calcite-combobox-item aria-hidden="true" guid="d52ebe25-8333-40c9-5444-b40c3dd6fb04" text-label="AIX" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d6dca82-d642-b6e1-5a82-cff23f76062d" text-label="TIFF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="0830c26a-a6f7-7d41-ea95-13d93f4c71ed" text-label="EPS" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="06c557a7-2697-9837-21bd-189888c50375" text-label="GIF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="7b28c2a3-b85e-68d7-fdc6-e86b8ecb5688" text-label="JPG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="c3e7d07b-9fb6-9cef-04dd-25e1c326a4e3" text-label="PDF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3fe4655e-80d8-72aa-a8c6-f15987ab9d72" text-label="PNG32" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="ee599a24-9166-8246-301c-1fe7071cad50" text-label="PNG8" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="10b32c5a-d76e-5431-cc4e-bcb8df24341d" text-label="SVG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="50ce4a50-7ddc-eb9a-1874-c5d3e0c8f95b" text-label="SVGZ" selection-mode="single-persist"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+    }
+
+    // Повик на функцијата за преведување на елементите
+    prevediEl();
+
+    // Земете го div елементот за извозот користејќи querySelector
+    const printDivElement = document.querySelector('.esri-print');
+
+    // Проверете дали елементот е пронајден
+    if (printDivElement) {
+        // Земете го насловниот елемент за извозот користејќи querySelector
+        const headerElement = printDivElement.querySelector('.esri-print__header-title');
+        
+        // Поставете ја македонската превод за насловот
+        if (headerElement) {
+            headerElement.textContent = 'Печати';
+        }
+
+        function macedoniaTranslate() {
+            const layoutTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab');
+            const mapOnlyTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab[data-tab-id="mapOnlyTab"]');
+            
+            if (layoutTab) layoutTab.textContent = 'Распоред';
+            if (mapOnlyTab) mapOnlyTab.textContent = 'Само карта';
+        }
+
+        macedoniaTranslate();
+
+        function translateToMacedonian() {
+            const advancedOptionsButtonTitle = document.querySelector('.esri-print__advanced-options-button-title');
+            const scaleInputLabel = document.querySelector('.esri-print__scale-info-container ');
+            const authorInputLabel = document.querySelector('.esri-print__author-info-container label');
+            const copyrightInputLabel = document.querySelector('.esri-print__copyright-info-container label');
+            const dpiInputLabel = document.querySelector('.esri-print__form-section-container:nth-child(4) label');
+            const includeLegendLabel = document.querySelector('.esri-print__legend-info-container:nth-child(5) label');
+            const includeNorthArrowLabel = document.querySelector('.esri-print__legend-info-container:nth-child(6) label');
+
+            advancedOptionsButtonTitle.textContent = "Напредни опции";
+            scaleInputLabel.innerHTML = '<div class="esri-print__scale-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="scaleEnabled" tabindex="0">Поставете скала</label><div class="esri-print__scale-input-container"><input type="number" aria-label="scale" aria-valuenow="null" class="esri-print__input-text esri-input esri-print__scale-input" data-input-name="scale" disabled="" role="spinbutton" tabindex="0"><button aria-label="reset" class="esri-widget--button esri-print__refresh-button esri-icon-refresh" tabindex="0" type="button"></button></div></div>';
+
+            authorInputLabel.innerHTML = '<div class="esri-print__author-info-container esri-print__form-section-container"><label>Автор<input type="text" class="esri-print__input-text esri-input" data-input-name="author" tabindex="0"></label></div>';
+            copyrightInputLabel.innerHTML = '<div class="esri-print__copyright-info-container esri-print__form-section-container"><label>Авторски права<input type="text" class="esri-print__input-text esri-input" data-input-name="copyright" tabindex="0"></label></div>';
+            dpiInputLabel.innerHTML = '<div class="esri-print__form-section-container"><label>DPI<input type="number" class="esri-print__input-text esri-input" data-input-name="dpi" min="1" tabindex="0"></label></div>';
+            includeLegendLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="legendEnabled" tabindex="0">Вклучи легенда</label></div>';
+            includeNorthArrowLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="northArrowEnabled" tabindex="0">Вклучи северна стрелка</label></div>';
+        }
+
+        translateToMacedonian();
+
+        const exportButton = document.querySelector('.esri-print__export-button');
+        exportButton.textContent = 'Печати';
+
+        const exportPanelContainer1 = document.querySelector('.esri-print__export-panel-container');
+        const exportTitle1 = exportPanelContainer1.querySelector('.esri-print__export-title');
+
+        const exportedFilesText = exportPanelContainer1.querySelector(' div  div');
+        exportTitle1.textContent = 'Печатени датотеки';
+        exportedFilesText.textContent = 'Вашите печатени датотеки ќе се појават тука.';
+    }
+   
+}
+
+
+
+      function translateToEnglish() {
+        // Header elements
+        document.getElementById('home').textContent = "Home";
+        document.getElementById('about').textContent = "About";
+        document.getElementById('contact').textContent = "Contact";
+
+        document.getElementById('searchInput').placeholder = "Search..."
+        document.getElementById('searchButton').innerHTML = "Search <i class='fa fa-search'>";
+        document.getElementById('galleryButton').innerHTML = "Gallery <i class='fa fa-picture-o'>";
+        document.getElementById('objectId').innerHTML = "Object ID <i class='fa fa-sort'>";
+        document.getElementById('name').innerHTML = "Name <i class='fa fa-sort'>";
+        document.getElementById('address').innerHTML = "Address <i class='fa fa-sort'>";
+        document.getElementById('xy').innerHTML = "XY <i class='fa fa-sort'> "; 
+        document.getElementById('exportButton').innerHTML = "Export to Excel <i class='fa fa-file-excel-o'>";
+
+        // Footer elements
+        document.getElementById('pFooter').textContent = "Connect with us on social networks:";
+        document.getElementById('shop').textContent = "© 2024 | Betting shops in Skopje";
+
+        // widgets
+
+        var zoomIn = document.querySelector('.esri-widget--button');
+        zoomIn.title = 'Zoom in';
+        
+        document.querySelector('.esri-input.esri-search__input').placeholder = "Find address or place";
+        document.querySelector('.esri-input.esri-search__input').title = "Find address or place";
+        document.querySelector('.esri-search__submit-button.esri-widget--button').title = "Search";   
+        document.querySelector('.esri-search__no-value-text').innerHTML = "Please enter a search term.";
+
+        // Преводи за текстот на копчето
+        const lokacija = {
+            macedonian: "Најдете ја мојата локација",
+            albanian: "Gjeni vendndodhjen time",
+            english: "Find my location"
+        };
+
+        // Функција за поставување на преводот на копчето
+        function lokacijaTranslation(language) {
+            const button = document.querySelector('.esri-locate .esri-widget--button');
+            if (button) {
+                button.textContent = lokacija[language];
+            }
+        }
+
+        // Пример како да ја поставите англиската верзија на текстот на копчето
+        lokacijaTranslation('english');
+
+
+
+        // Преводи за текстот на копчето
+        const translations = {
+            macedonian: "Стандарден поглед на мапата",
+            albanian: "Pamje e zakonshme e hartës",
+            english: "Default view map"
+        };
+
+        // Функција за поставување на преводот на копчето
+        function setButtonTranslation(language) {
+            const button = document.querySelector('.esri-home .esri-widget--button');
+            if (button) {
+                button.textContent = translations[language];
+            }
+        }
+
+        // Пример како да ја поставите англиската верзија на текстот на копчето
+        setButtonTranslation('english');
+
+
+
+        document.querySelector('.esri-layer-list__item-content.esri-layer-list__item-content').textContent = 'Betting shops and casinos under 400 meters';
+        document.querySelector('.esri-widget__heading.esri-legend__service-label').innerHTML = 'Betting shops and casinos under 400 meters';
+
+
+        /*document.querySelector('.esri-coordinate-conversion__select-primary').title = 'Add conversion';
+        // Select the "Add conversion" option element
+        const addConversionOption = document.querySelector('.esri-select.esri-coordinate-conversion__select-primary option[value=""]');
+        // Set its text content to the English translation
+        addConversionOption.innerText = 'Add conversion';
+        */
+
+        document.querySelector('.esri-select.esri-coordinate-conversion__select-row').setAttribute('title', 'Select format');
+        /*document.querySelector('.esri-widget--button[title = "Input coordinate"]').title ='Input coordinate';
+        document.querySelector('.esri-widget--button.esri-coordinate-conversion__mode-toggle').setAttribute('title', 'Capture mode');
+        document.querySelector('.esri-widget--button[title = "Format settings"]').setAttribute('title', 'Format settings');
+        */
+
+        // Define the English translation
+        const englishTranslation = 'Start to measure by clicking in the map to place your first point';
+        // Select the <p> element inside the container with class "esri-measurement-widget-content__hint-text"
+        const peElement = document.querySelector('.esri-measurement-widget-content__hint-text');
+        // Set its text content to the English translation
+        peElement.textContent = englishTranslation;
+
+        const englsihTranslations = [
+          'Input coordinate',
+          'Capture mode',
+          'Format settings'
+        ];
+
+        // Select all li elements inside the ul with class "esri-coordinate-conversion__tools"
+        const liElements = document.querySelectorAll('.esri-coordinate-conversion__tools li');
+
+        // Loop through each li element and set event listeners for hover
+        liElements.forEach((li, index) => {
+          // Set initial title attribute to show icon
+          li.title = ''; // Remove default browser tooltip
+
+          // Add event listener for mouse enter
+          li.addEventListener('mouseenter', () => {
+            li.title = englsihTranslations[index]; // Change title on hover
+          });
+
+          // Add event listener for mouse leave to revert to icon
+          li.addEventListener('mouseleave', () => {
+            li.title = ''; // Revert to icon on mouse leave
+          });
+        });
+
+        const areaEnglishTranslation = 'Area';
+
+        const measurementItemTitle = document.querySelector('.esri-measurement-widget-content__measurement-item__title');
+
+        if (measurementItemTitle) {
+            measurementItemTitle.textContent = areaEnglishTranslation;
+        }
+
+        // Define English translations for the elements
+        const bookmarkTranslations = {
+            heading: 'No bookmarks',
+            description: 'Add bookmarks to your map and they will appear here.',
+            //buttonText: 'Add'
+        };
+
+        // Select the div element using querySelector
+        const emptyDivElement = document.querySelector('.esri-widget__content--empty');
+
+        // Check if the element is found
+        if (emptyDivElement) {
+            // Select the h2 element using querySelector
+            const headingElement = emptyDivElement.querySelector('h2');
+
+            // Set the English translation for the heading
+            if (headingElement) {
+                headingElement.textContent = bookmarkTranslations.heading;
+            }
+
+            // Select the p element using querySelector
+            const descriptionElement = emptyDivElement.querySelector('p');
+
+            // Set the English translation for the description
+            if (descriptionElement) {
+                descriptionElement.textContent = bookmarkTranslations.description;
+            }
+        } else {
+            console.error("Div element with class 'esri-widget__content--empty' not found.");
+        }
+        /*
+        function translateText() {
+            const unitLabel = document.querySelector('.esri-measurement-widget-content__settings .esri-unit-select__label');
+            const areaTitle = document.querySelector('.esri-measurement-widget-content__measurement-item .esri-measurement-widget-content__measurement-item__title');
+            const perimeterTitle = document.querySelector('.esri-measurement-widget-content__measurement-item .esri-measurement-widget-content__measurement-item__title');
+            const newMeasurementButton = document.querySelector('.esri-measurement-widget-content__actions .esri-area-measurement-2d__clear-button');
+
+            unitLabel.innerHTML = '<div class="esri-measurement-widget-content__settings"><div class="esri-unit-select"><calcite-label class="esri-unit-select__label" alignment="start" scale="m" layout="default">Единица<calcite-select class="esri-unit-select__select" scale="m" status="idle" width="auto"><calcite-option selected="">Metric</calcite-option><calcite-option>Imperial</calcite-option><calcite-option>Square inches</calcite-option><calcite-option>Square feet</calcite-option><calcite-option>Square yards</calcite-option><calcite-option>Square miles</calcite-option><calcite-option>Square feet (US)</calcite-option><calcite-option>Square meters</calcite-option><calcite-option>Square kilometers</calcite-option><calcite-option>Acres</calcite-option><calcite-option>Ares</calcite-option><calcite-option>Hectares</calcite-option></calcite-select></calcite-label></div></div>';
+            areaTitle.innerHTML = '<div class="esri-measurement-widget-content__measurement-item"><span class="esri-measurement-widget-content__measurement-item__title">Површина</span><span aria-live="polite" class="esri-measurement-widget-content__measurement-item__value">408,009.13 m²</span></div>';
+            perimeterTitle.innerHTML = '<div class="esri-measurement-widget-content__measurement-item"><span class="esri-measurement-widget-content__measurement-item__title">Периметар</span><span aria-live="polite" class="esri-measurement-widget-content__measurement-item__value">2,923.59 m</span></div>';
+            newMeasurementButton.innerHTML = '<div class="esri-measurement-widget-content__actions"><calcite-button class="esri-area-measurement-2d__clear-button" alignment="center" appearance="solid" kind="brand" scale="m" type="button" width="auto">Ново мерење</calcite-button></div>';
+    
+        }
+
+        // Call the translation function
+        translateText();
+        */
+
+
+        // Get the div element for printing using querySelector
+        const printDivElement = document.querySelector('.esri-print');
+
+        // Check if the element is found
+        if (printDivElement) {
+            // Get the header element for printing using querySelector
+            const headerElement = printDivElement.querySelector('.esri-print__header-title');
+            
+            // Set the Macedonian translation for the header
+            if (headerElement) {
+                headerElement.textContent = 'Print';
+            }
+
+            function translateToEnglish() {
+                const layoutTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab');
+                const mapOnlyTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab[data-tab-id="mapOnlyTab"]');
+                
+                if (layoutTab) layoutTab.textContent = 'Layout';
+                if (mapOnlyTab) mapOnlyTab.textContent = 'Map only';
+            }
+
+            translateToEnglish();
+
+          }
+
+
+        function prevediEl() {
+            // Преведи ги елементите со querySelector
+            const naslovEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(1) calcite-label');
+            const shablonEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(2) calcite-label');
+            const formatEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(3) calcite-label');
+
+            // Преведи ги текстовите на англиски
+            naslovEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Title<calcite-input alignment="start" number-button-type="vertical" scale="m" status="idle" type="text" placeholder="Title of file"></calcite-input></calcite-label></div>';
+            shablonEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Template<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single" scale="m" status="idle" placeholder="Select template"><calcite-combobox-item aria-hidden="true" guid="ac877623-b6bd-82ac-5fbc-efb59fe97789" text-label="A3 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3a5ef62c-675e-dd17-99fb-9a8ac81a3e15" text-label="A3 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="56b8c836-a2c1-2f7b-9b3b-6b718fce7d7e" text-label="A4 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="57709eaa-493a-5d63-ee84-4177a699a2d9" text-label="A4 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c1d4a18b-5751-0237-f0bc-9bc4a4a606bd" text-label="A4 Layout DynTxtElm Basic" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c4cc0ea5-e7d3-ab2f-9c6b-f6d833c2902e" text-label="A4 Layout DynTxtElm Basic Count MultipleLayers" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="ed11f4f9-08db-2ca3-fb95-1f39b20325c1" text-label="Letter ANSI A landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d9b37b6-f64c-72c0-022e-d2a3ca2a8a39" text-label="Letter ANSI A portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="f4c453fa-5de3-6258-fe1a-6d73162334c3" text-label="Tabloid ANSI B landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="08bdecdd-2a7d-eab4-e7ca-c516cc7e493a" text-label="Tabloid ANSI B portrait" selection-mode="single"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+            formatEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">File format<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single-persist" scale="m" status="idle" placeholder="Select format"><calcite-combobox-item aria-hidden="true" guid="d52ebe25-8333-40c9-5444-b40c3dd6fb04" text-label="AIX" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d6dca82-d642-b6e1-5a82-cff23f76062d" text-label="TIFF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="0830c26a-a6f7-7d41-ea95-13d93f4c71ed" text-label="EPS" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="06c557a7-2697-9837-21bd-189888c50375" text-label="GIF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="7b28c2a3-b85e-68d7-fdc6-e86b8ecb5688" text-label="JPG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="c3e7d07b-9fb6-9cef-04dd-25e1c326a4e3" text-label="PDF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3fe4655e-80d8-72aa-a8c6-f15987ab9d72" text-label="PNG32" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="ee599a24-9166-8246-301c-1fe7071cad50" text-label="PNG8" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="10b32c5a-d76e-5431-cc4e-bcb8df24341d" text-label="SVG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="50ce4a50-7ddc-eb9a-1874-c5d3e0c8f95b" text-label="SVGZ" selection-mode="single-persist"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+        }
+
+
+        // Повик на функцијата за преведување на елементите
+        prevediEl();
+
+        function translateToEnglsih() {
+            const advancedOptionsButtonTitle = document.querySelector('.esri-print__advanced-options-button-title');
+            const scaleInputLabel = document.querySelector('.esri-print__scale-info-container');
+            const authorInputLabel = document.querySelector('.esri-print__author-info-container label');
+            const copyrightInputLabel = document.querySelector('.esri-print__copyright-info-container label');
+            const dpiInputLabel = document.querySelector('.esri-print__form-section-container:nth-child(4) label');
+            const includeLegendLabel = document.querySelector('.esri-print__legend-info-container:nth-child(5) label');
+            const includeNorthArrowLabel = document.querySelector('.esri-print__legend-info-container:nth-child(6) label');
+
+            advancedOptionsButtonTitle.textContent = "Advanced options";
+            scaleInputLabel.innerHTML = '<div class="esri-print__scale-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="scaleEnabled" tabindex="0">Set scale</label><div class="esri-print__scale-input-container"><input type="number" aria-label="scale" aria-valuenow="null" class="esri-print__input-text esri-input esri-print__scale-input" data-input-name="scale" disabled="" role="spinbutton" tabindex="0"><button aria-label="reset" class="esri-widget--button esri-print__refresh-button esri-icon-refresh" tabindex="0" type="button"></button></div></div>';
+
+            authorInputLabel.innerHTML = '<div class="esri-print__author-info-container esri-print__form-section-container"><label>Author<input type="text" class="esri-print__input-text esri-input" data-input-name="author" tabindex="0"></label></div>';
+            copyrightInputLabel.innerHTML = '<div class="esri-print__copyright-info-container esri-print__form-section-container"><label>Copyright<input type="text" class="esri-print__input-text esri-input" data-input-name="copyright" tabindex="0"></label></div>';
+            dpiInputLabel.innerHTML = '<div class="esri-print__form-section-container"><label>DPI<input type="number" class="esri-print__input-text esri-input" data-input-name="dpi" min="1" tabindex="0"></label></div>';
+            includeLegendLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="legendEnabled" tabindex="0">Include legend</label></div>';
+            includeNorthArrowLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="northArrowEnabled" tabindex="0">Include north arrow</label></div>';
+        }
+
+         translateToEnglsih();
+
+        document.querySelector('.esri-print__advanced-options-button-title').textContent ="Advanced options";
+
+        const exportButton = document.querySelector('.esri-print__export-button');
+        exportButton.textContent = 'Print';
+
+        const exportPanelContainer1 = document.querySelector('.esri-print__export-panel-container');
+        const exportTitle1 = exportPanelContainer1.querySelector('.esri-print__export-title');
+
+        const exportedFilesText = exportPanelContainer1.querySelector(' div  div');
+        exportTitle1.textContent = 'Exported files';
+        exportedFilesText.textContent = 'Your exported files will appear here.';
+
+
+
+        
+      // Define translations for the button titles
+      const sketchTranslations = {
+          english: {
+              "Select by rectangle": "Select by rectangle",
+              "Select by lasso": "Select by lasso"
+          },
+          
+      };
+
+
+
+      // Define the translation for "Select Feature" in English
+      const sketchTranslation = "Select Feature";
+
+      // Find the <calcite-action> element with the title "Select feature"
+      const selectFeatureButton = document.querySelector('calcite-action[title="Select feature"]');
+      if (selectFeatureButton) {
+          // Update the title attribute to the English translation
+          selectFeatureButton.setAttribute('title', sketchTranslation);
+      }
+
+
+      // Function to set button translations based on the selected language
+      function setSketchTranslations(language) {
+          // Select the container of the buttons
+          const container = document.querySelector('.esri-selection-toolbar__container');
+          if (container) {
+              // Select all calcite-action elements within the container
+              const buttons = container.querySelectorAll('calcite-action');
+              // Loop through each button
+              buttons.forEach(button => {
+                  // Get the title of the button
+                  const title = button.getAttribute('title');
+                  // Get the translation for the current language
+                  const translation = sketchTranslations[language][title];
+                  // If translation exists, set it as the button title
+                  if (translation) {
+                      button.setAttribute('title', translation);
+                  }
+              });
+          }
+      }
+
+      // Example: Set English translations for the buttons
+      setSketchTranslations('english');
+
+
+      // Definirajte prevod za naslov dugmeta
+      const settingSketch = {
+          macedonian: {
+              "Settings": "Settings"
+          }
+      };
+
+      // Funkcija za postavljanje prevoda na dugme
+      function setTranslation(language) {
+          const action = document.querySelector('.esri-sketch__section calcite-action[title="Settings"]');
+          if (action) {
+              action.setAttribute('title', settingSketch[language]["Settings"]);
+          }
+      }
+
+      // Postavite angliski prevod za dugme
+      setTranslation('english');
+
+
+      const drawTranslations = {
+          "Draw a point": "Draw a point",
+          "Draw a polyline": "Draw a polyline",
+          "Draw a polygon": "Draw a polygon",
+          "Draw a rectangle": "Draw a rectangle",
+          "Draw a circle": "Draw a circle",
+          "Undo": "Undo",
+          "Redo": "Redo"
+      };
+
+      // Преведи ги копчињата користејќи querySelector
+      function translateButtons() {
+          const buttonSections = document.querySelectorAll('.esri-sketch__section.esri-sketch__tool-section[role="menu"]');
+          buttonSections.forEach(section => {
+              const buttons = section.querySelectorAll('calcite-action');
+              buttons.forEach(button => {
+                  const title = button.getAttribute('title');
+                  if (drawTranslations[title]) {
+                      button.setAttribute('title', drawTranslations[title]);
+                  }
+              });
+          });
+      }
+
+      // Изврши ја функцијата за превод на копчињата
+      translateButtons();
+
+      }
+
+      function translateToAlbanian() {
+        // Header elements
+        document.getElementById('home').textContent = "Shtëpia";
+        document.getElementById('about').textContent = "Rreth Nesh";
+        document.getElementById('contact').textContent = "Kontakti";
+
+        // Search input placeholder
+        document.getElementById('searchInput').placeholder = "Kërko...";
+        
+        // Search button
+        document.getElementById('searchButton').innerHTML = "Kërko <i class='fa fa-search'>";
+        
+        // Gallery button
+        document.getElementById('galleryButton').innerHTML = "Galeria <i class='fa fa-picture-o'>";
+        
+        // Object ID
+        document.getElementById('objectId').innerHTML = "ID e Objektit <i class='fa fa-sort'> ";
+        
+        // Name
+        document.getElementById('name').innerHTML = "Emri <i class='fa fa-sort'>";
+        
+        // Address
+        document.getElementById('address').innerHTML = "Adresa <i class='fa fa-sort'>";
+        document.getElementById('xy').innerHTML = "XY <i class='fa fa-sort'> "; 
+        
+        // Export button
+        document.getElementById('exportButton').innerHTML = "Eksportoni në Excel <i class='fa fa-file-excel-o'>";
+        
+        // Footer elements
+        document.getElementById('pFooter').textContent = "Lidhuni me ne në rrjetet sociale:";
+        document.getElementById('shop').textContent = "© 2024 | Dyqanet e Bastit në Shkup";
+
+        // widgets
+
+        var zoomPlus = document.querySelector('.esri-widget--button');
+        zoomPlus.title = 'Zmadhoni';
+       
+        document.querySelector('.esri-input.esri-search__input').placeholder = "Gjeni adresën ose vendin";
+        document.querySelector('.esri-input.esri-search__input').title = "Gjeni adresën ose vendin";
+        document.querySelector('.esri-search__submit-button.esri-widget--button').title = "Kërko";
+        document.querySelector('.esri-search__no-value-text').innerHTML = "Ju lutemi shkruani një term kërkimi.";
+
+        // Преводи за текстот на копчето
+        const lokacija = {
+            macedonian: "Најдете ја мојата локација",
+            albanian: "Gjeni vendndodhjen time",
+            english: "Find my location"
+        };
+
+        // Функција за поставување на преводот на копчето
+        function lokacijaTranslation(language) {
+            const button = document.querySelector('.esri-locate .esri-widget--button');
+            if (button) {
+                button.textContent = lokacija[language];
+            }
+        }
+
+        // Пример како да ја поставите албанската верзија на текстот на копчето
+        lokacijaTranslation('albanian');
+
+
+        // Преводи за текстот на копчето
+        const translations = {
+            macedonian: "Стандарден поглед на мапата",
+            albanian: "Pamje e zakonshme e hartës",
+            english: "Default view map"
+        };
+
+        // Функција за поставување на преводот на копчето
+        function setButtonTranslation(language) {
+            const button = document.querySelector('.esri-home .esri-widget--button');
+            if (button) {
+                button.textContent = translations[language];
+            }
+        }
+
+        // Пример како да ја поставите албанската верзија на текстот на копчето
+        setButtonTranslation('albanian');
+
+
+        document.querySelector('.esri-layer-list__item-content.esri-layer-list__item-content').textContent = 'Dyqane bastesh dhe kazino nën 400 metra';
+        document.querySelector('.esri-widget__heading.esri-legend__service-label').innerHTML = 'Dyqane bastesh dhe kazino nën 400 metra';
+
+        // Set the title attribute directly
+        /*document.querySelector('.esri-coordinate-conversion__select-primary').title = 'Shto konvertim';
+
+        // Select the "Shto konvertim" option element
+        const addConversionOption = document.querySelector('.esri-select.esri-coordinate-conversion__select-primary option[value=""]');
+        // Set its text content to the Albanian translation
+        addConversionOption.innerText = 'Shto konvertim';
+        */
+
+        document.querySelector('.esri-select.esri-coordinate-conversion__select-row').title = 'Zgjidhni formatin';
+        /*document.querySelector('.esri-widget--button[title = "Input coordinate"]').setAttribute('title', 'Koordinata e hyrjes');
+        document.querySelector('.esri-widget--button.esri-coordinate-conversion__mode-toggle').title = 'Modaliteti i kapjes';
+        document.querySelector('.esri-widget--button[title = "Format settings"]').setAttribute('title', 'Cilësimet e formatit');
+        */
+
+        // Define the Albanian translation
+        const albanianTranslation = 'Filloni të matni duke klikuar në hartë për të vendosur pikën tuaj të parë';
+        // Select the <p> element inside the container with class "esri-measurement-widget-content__hint-text"
+        const qElement = document.querySelector('.esri-measurement-widget-content__hint-text');
+        // Set its text content to the English translation
+        qElement.textContent = albanianTranslation;
+
+        // Albanian translations for li elements
+        const albanianTranslations = [
+          'Koordinata e hyrjes',
+          'Modaliteti i kapjes',
+          'Cilësimet e formatit'
+        ];
+
+        // Select all li elements inside the ul with class "esri-coordinate-conversion__tools"
+        const liElements = document.querySelectorAll('.esri-coordinate-conversion__tools li');
+
+        // Loop through each li element and set event listeners for hover
+        liElements.forEach((li, index) => {
+          // Set initial title attribute to show icon
+          li.title = ''; // Remove default browser tooltip
+
+          // Add event listener for mouse enter
+          li.addEventListener('mouseenter', () => {
+            li.title = albanianTranslations[index]; // Change title on hover
+          });
+
+          // Add event listener for mouse leave to revert to icon
+          li.addEventListener('mouseleave', () => {
+            li.title = ''; // Revert to icon on mouse leave
+          });
+        });
+
+
+        const areaTranslation = 'Sipërfaqja';
+
+        const measurementItemTitle = document.querySelector('.esri-measurement-widget-content__measurement-item__title');
+
+        if (measurementItemTitle) {
+            measurementItemTitle.textContent = areaTranslation; 
+        }
+
+
+        
+        const bookmarkTranslations = {
+            heading: 'Pa shënime',
+            description: 'Shtoni shënime në hartën tuaj dhe ato do të shfaqen këtu.',
+            //buttonText: 'Shto'
+        };
+
+        const emptyDivElement = document.querySelector('.esri-widget__content--empty');
+
+        if (emptyDivElement) {
+            const headingElement = emptyDivElement.querySelector('h2');
+
+            if (headingElement) {
+                headingElement.textContent = bookmarkTranslations.heading;
+            }
+
+            const descriptionElement = emptyDivElement.querySelector('p');
+
+            if (descriptionElement) {
+                descriptionElement.textContent = bookmarkTranslations.description;
+            }
+        } else {
+            console.error("Elementi div me klasën 'esri-widget__content--empty' nuk është gjetur.");
+        }
+
+
+        const printDivElement = document.querySelector('.esri-print');
+
+        if (printDivElement) {
+            const headerElement = printDivElement.querySelector('.esri-print__header-title');
+            
+            if (headerElement) {
+                headerElement.textContent = 'Printo';
+            }
+
+            function albanianTranslate() {
+                const layoutTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab');
+                const mapOnlyTab = document.querySelector('.esri-print__layout-tab-list .esri-print__layout-tab[data-tab-id="mapOnlyTab"]');
+                
+                if (layoutTab) layoutTab.textContent = 'Shabllon';
+                if (mapOnlyTab) mapOnlyTab.textContent = 'Vetëm harta';
+            }
+
+            albanianTranslate();
+          }
+
+          
+        function prevediEl() {
+            // Преведи ги елементите со querySelector
+            const naslovEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(1) calcite-label');
+            const shablonEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(2) calcite-label');
+            const formatEl = document.querySelector('.esri-print__panel-container .esri-print__form-section-container:nth-child(3) calcite-label');
+
+            // Преведи ги текстовите на англиски
+            naslovEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Titulli<calcite-input alignment="start" number-button-type="vertical" scale="m" status="idle" type="text" placeholder="Titulli i dosjes"></calcite-input></calcite-label></div>';
+            shablonEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Shabllon<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single" scale="m" status="idle" placeholder="Zgjidhni shabllonin"><calcite-combobox-item aria-hidden="true" guid="ac877623-b6bd-82ac-5fbc-efb59fe97789" text-label="A3 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3a5ef62c-675e-dd17-99fb-9a8ac81a3e15" text-label="A3 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="56b8c836-a2c1-2f7b-9b3b-6b718fce7d7e" text-label="A4 landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="57709eaa-493a-5d63-ee84-4177a699a2d9" text-label="A4 portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c1d4a18b-5751-0237-f0bc-9bc4a4a606bd" text-label="A4 Layout DynTxtElm Basic" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="c4cc0ea5-e7d3-ab2f-9c6b-f6d833c2902e" text-label="A4 Layout DynTxtElm Basic Count MultipleLayers" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="ed11f4f9-08db-2ca3-fb95-1f39b20325c1" text-label="Letter ANSI A landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d9b37b6-f64c-72c0-022e-d2a3ca2a8a39" text-label="Letter ANSI A portrait" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="f4c453fa-5de3-6258-fe1a-6d73162334c3" text-label="Tabloid ANSI B landscape" selection-mode="single"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="08bdecdd-2a7d-eab4-e7ca-c516cc7e493a" text-label="Tabloid ANSI B portrait" selection-mode="single"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+            formatEl.innerHTML = '<div class="esri-print__form-section-container"><calcite-label alignment="start" scale="m" layout="default">Formati i skedarit<calcite-combobox clear-disabled="" selection-display="all" max-items="6" overlay-positioning="absolute" selection-mode="single-persist" scale="m" status="idle" placeholder="Zgjidhni formatin"><calcite-combobox-item aria-hidden="true" guid="d52ebe25-8333-40c9-5444-b40c3dd6fb04" text-label="AIX" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="1d6dca82-d642-b6e1-5a82-cff23f76062d" text-label="TIFF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="0830c26a-a6f7-7d41-ea95-13d93f4c71ed" text-label="EPS" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="06c557a7-2697-9837-21bd-189888c50375" text-label="GIF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="7b28c2a3-b85e-68d7-fdc6-e86b8ecb5688" text-label="JPG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" selected="" guid="c3e7d07b-9fb6-9cef-04dd-25e1c326a4e3" text-label="PDF" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="3fe4655e-80d8-72aa-a8c6-f15987ab9d72" text-label="PNG32" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="ee599a24-9166-8246-301c-1fe7071cad50" text-label="PNG8" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="10b32c5a-d76e-5431-cc4e-bcb8df24341d" text-label="SVG" selection-mode="single-persist"></calcite-combobox-item><calcite-combobox-item aria-hidden="true" guid="50ce4a50-7ddc-eb9a-1874-c5d3e0c8f95b" text-label="SVGZ" selection-mode="single-persist"></calcite-combobox-item></calcite-combobox></calcite-label></div>';
+        }
+
+
+        // Повик на функцијата за преведување на елементите
+        prevediEl();
+
+        function translateToEnglsih() {
+            const advancedOptionsButtonTitle = document.querySelector('.esri-print__advanced-options-button-title');
+            const scaleInputLabel = document.querySelector('.esri-print__scale-info-container');
+            const authorInputLabel = document.querySelector('.esri-print__author-info-container label');
+            const copyrightInputLabel = document.querySelector('.esri-print__copyright-info-container label');
+            const dpiInputLabel = document.querySelector('.esri-print__form-section-container:nth-child(4) label');
+            const includeLegendLabel = document.querySelector('.esri-print__legend-info-container:nth-child(5) label');
+            const includeNorthArrowLabel = document.querySelector('.esri-print__legend-info-container:nth-child(6) label');
+
+            advancedOptionsButtonTitle.textContent = "Opsione te avancuara";
+            scaleInputLabel.innerHTML = '<div class="esri-print__scale-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="scaleEnabled" tabindex="0">Vendosni shkallën</label><div class="esri-print__scale-input-container"><input type="number" aria-label="scale" aria-valuenow="null" class="esri-print__input-text esri-input esri-print__scale-input" data-input-name="scale" disabled="" role="spinbutton" tabindex="0"><button aria-label="reset" class="esri-widget--button esri-print__refresh-button esri-icon-refresh" tabindex="0" type="button"></button></div></div>';
+            authorInputLabel.innerHTML = '<div class="esri-print__author-info-container esri-print__form-section-container"><label>Autori<input type="text" class="esri-print__input-text esri-input" data-input-name="author" tabindex="0"></label></div>';
+            copyrightInputLabel.innerHTML = '<div class="esri-print__copyright-info-container esri-print__form-section-container"><label>E drejta e autorit<input type="text" class="esri-print__input-text esri-input" data-input-name="copyright" tabindex="0"></label></div>';
+            dpiInputLabel.innerHTML = '<div class="esri-print__form-section-container"><label>DPI<input type="number" class="esri-print__input-text esri-input" data-input-name="dpi" min="1" tabindex="0"></label></div>';
+            includeLegendLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="legendEnabled" tabindex="0">Përfshi legjendën</label></div>';
+            includeNorthArrowLabel.innerHTML = '<div class="esri-print__legend-info-container esri-print__form-section-container"><label><input type="checkbox" data-option-name="northArrowEnabled" tabindex="0">Përfshi shigjetën veriore</label></div>';
+        }
+
+         translateToEnglsih();
+
+
+        document.querySelector('.esri-print__advanced-options-button-title').textContent ="Opsione të përparuara";
+
+        const exportButton = document.querySelector('.esri-print__export-button');
+        exportButton.textContent = 'Printo';
+
+        const exportPanelContainer1 = document.querySelector('.esri-print__export-panel-container');
+        const exportTitle1 = exportPanelContainer1.querySelector('.esri-print__export-title');
+
+        const exportedFilesText = exportPanelContainer1.querySelector(' div  div');
+        exportTitle1.textContent = 'Dosjet e eksportuara';
+        exportedFilesText.textContent = 'Dosjet e eksportuara tuaja do të shfaqen këtu.';
+
+        // Define translations for the button titles
+        const sketchTranslations = {
+            albanian: {
+                "Select by rectangle": "Zgjidh me drejtkëndësh",
+                "Select by lasso": "Zgjidh me lasso"
+            }
+        };
+
+        // Define the translation for "Select Feature" in Albanian
+        const sketchTranslation = "Zgjidhni Veçori";
+
+        // Find the <calcite-action> element with the title "Select feature"
+        const selectFeatureButton = document.querySelector('calcite-action[title="Select feature"]');
+        if (selectFeatureButton) {
+            // Update the title attribute to the Albanian translation
+            selectFeatureButton.setAttribute('title', sketchTranslation);
+        }
+
+        // Function to set button translations based on the selected language
+        function setSketchTranslations(language) {
+            // Select the container of the buttons
+            const container = document.querySelector('.esri-selection-toolbar__container');
+            if (container) {
+                // Select all calcite-action elements within the container
+                const buttons = container.querySelectorAll('calcite-action');
+                // Loop through each button
+                buttons.forEach(button => {
+                    // Get the title of the button
+                    const title = button.getAttribute('title');
+                    // Get the translation for the current language
+                    const translation = sketchTranslations[language][title];
+                    // If translation exists, set it as the button title
+                    if (translation) {
+                        button.setAttribute('title', translation);
+                    }
+                });
+            }
+        }
+
+        // Example: Set Albanian translations for the buttons
+        setSketchTranslations('albanian');
+
+        // Define translation for the button title
+        const settingSketch = {
+            albanian: {
+                "Settings": "Cilësimet"
+            }
+        };
+
+        // Function to set translation for the button
+        function setTranslation(language) {
+            const action = document.querySelector('.esri-sketch__section calcite-action[title="Settings"]');
+            if (action) {
+                action.setAttribute('title', settingSketch[language]["Settings"]);
+            }
+        }
+
+        // Set Albanian translation for the button
+        setTranslation('albanian');
+
+
+
+        const drawTranslations = {
+          "Draw a point": "Vizatoni një pikë",
+          "Draw a polyline": "Vizatoni një poliline",
+          "Draw a polygon": "Vizato një shumëkëndësh",
+          "Draw a rectangle": "Vizato një drejtkëndësh",
+          "Draw a circle": "Vizatoni një rreth",
+          "Undo": "Zhbë",
+          "Redo": "Ribër"
+      };
+
+      // Преведи ги копчињата користејќи querySelector
+      function translateButtons() {
+          const buttonSections = document.querySelectorAll('.esri-sketch__section.esri-sketch__tool-section[role="menu"]');
+          buttonSections.forEach(section => {
+              const buttons = section.querySelectorAll('calcite-action');
+              buttons.forEach(button => {
+                  const title = button.getAttribute('title');
+                  if (drawTranslations[title]) {
+                      button.setAttribute('title', drawTranslations[title]);
+                  }
+              });
+          });
+      }
+
+      // Изврши ја функцијата за превод на копчињата
+      translateButtons();
+
+
+      }
+  </script>
+
+    <div id="viewDiv"></div><br>
+    <div>
+        <form>
+            <input type="text" id="searchInput" name="search" placeholder="Search me...">
+            <!-- bez name informaciite vo <input> nema da se isprakjaat koga kje se podnese formata -->
+            <button type="button" id="searchButton" onclick="searchTable()">Search <i class="fa fa-search"></i></button>
+            <button id="galleryButton" onclick="openGalleryModal(event)">Gallery <i class="fa fa-picture-o"></i></button>
+        </form>
+    </div>
+
+    <table id="searchTable">
+      <thead>
+        <tr>
+          <th style="display: none;" id="xy">XY <i class="fa fa-sort"></i></th> <!-- New column for XY coordinates -->
+          <th id="objectId">Object ID <i class="fa fa-sort"></i></th>
+          <th id="name">Name <i class="fa fa-sort"></i></th>
+          <th id="address">Address <i class="fa fa-sort"></i></th>
+ 
+        </tr>
+      </thead>
+      <!--<tbody id="tableBody">
+      </tbody>-->
+    </table>
+    
+    <div class="center">
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+<script>
+     /* addEventListener e prikachen na nastanot „DOMContentLoaded“ i skriptata se izvrshuva otkako sodrzhinata na HTML e celosno vchitana.*/ 
+    document.addEventListener("DOMContentLoaded", function() {
+        const itemsPerPage = 10; // incijalizacija na promenlivi
+        let currentPage = 1;
+        let totalItems = 0;
+        let tableData = [];
+
+        async function fetchDataAndPopulateTable() { // so ovaa funkcija se prezemaat podatoci od odredena URL adresa
+            const url = 'https://app.gdi.mk:6443/arcgis/rest/services/Studenti/Kladilnici_Kazina/MapServer/1/query?f=json&where=1%3D1&outFields=*';
+            const response = await fetch(url);
+            const data = await response.json(); //po dobivanjeto na odgovorot, gi izvlekuva podatocite vo JSON i gi dodeluva na promenlivata data
+            totalItems = data.features.length;
+
+            /* po dobivanjeto na podatocite, gi presmetuva indeksite za pochetok i kraj vrz osnova na momentalnata stranica i 
+            brojot na stavki (items) po stranica */
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            tableData = data.features.slice(startIndex, endIndex);
+
+            const table = document.getElementById('searchTable');
+
+            // Clear existing rows in the table
+            table.innerHTML = '';
+
+            // Add table headers
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <th style="display: none;" id="xy">XY <i class="fa fa-sort"></i></th>
+                <th id="objectId" onclick="sortTable(1)">Object ID <i class="fa fa-sort"></i></th>
+                <th id="name" onclick="sortTable(2)">Name <i class="fa fa-sort"></i></th>
+                <th id="address" onclick="sortTable(3)">Address <i class="fa fa-sort"></i></th>
+            `;
+            table.appendChild(headerRow);
+
+            /* dinamichki generira HTML redovi <tr> i kjelii <td> za sekoj item vo tabelata*/
+            // Populate table rows with new data
+            tableData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="display: none;">${item.geometry && item.geometry.x && item.geometry.y ? `(${item.geometry.x}, ${item.geometry.y})` : 'N/A'}</td>
+                    <td>${item.attributes['OBJECTID'] || 'N/A'}</td>
+                    <td>${item.attributes['Ime'] || 'N/A'}</td>
+                    <td>${item.attributes['Adresa'] || 'N/A'}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            updatePagination(); /* funkcijata gi azhurira pagination links vrz osnova na vkupniot broj na stavki (totalItems) 
+          i tekovnata stranica (currentPage)*/
+        }
+
+        /* Оваа функција, updatePagination (), е одговорна за ажурирање на врските за пагинација прикажани на веб-страницата 
+        врз основа на тековниот број на страница (currentPage) и вкупниот број на ставки (totalItems) 
+        поделен со бројот на ставки по страница (itemsPerPage).*/
+        function updatePagination() {
+            /*Функцијата updatePagination() го пресметува максималниот број на страници (maxPage) врз основа на вкупниот број на ставки и ставки по страница.*/
+            const maxPage = Math.ceil(totalItems / itemsPerPage); /* Ова осигурува дека имаме доволно страници за прикажување на сите ставки, 
+          заокружени на најблискиот цел број.*/
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = ''; /* ги брише сите постоечки врски за пагинација во контејнерот div (<div id="pagination">). 
+          Ова осигурува дека започнуваме со чиста листа секој пат кога се ажурира страницата.*/
+    
+
+            for (let i = 1; i <= maxPage; i++) {
+                const link = document.createElement('a'); /* za sekoj broj na stranica se kreira nov <a> element za da ja pretstavi vrskata za paginacija */
+                link.href = '#';
+                link.textContent = i; // sodrzhinata na anchor elementot e vsushnost brojot na stranicata
+                if (i === currentPage) {
+                    link.classList.add('active'); /* Ако тековниот број на страница/current Page number (i) се совпаѓа со 
+              тековната страница/ currentPage, тој ја додава класата CSS „active“ за визуелно да ја означи активната страница.*/
+                }
+
+                link.addEventListener('click', function(event) {// na sekoj pagination link e prikachen event listener
+                    event.preventDefault();/* Кога ќе се кликне, го спречува стандардното дејство (page reload) користејќи event.preventDefault().*/
+                    currentPage = i;
+                    /* По кликнување, таа ја ажурира променливата currentPage до кликнатиот број на страницата (i) и ја повикува функцијата 
+                    fetchDataAndPopulateTable() за да ја преземе и пополни табелата со податоци за новата страница.*/
+                    fetchDataAndPopulateTable();
+                });
+                paginationDiv.appendChild(link);
+                /* Секој pagination link (<a> елемент) се додава во контејнерот за пагинација (paginationDiv) користејќи paginationDiv.appendChild(link).*/
+            }
+        }
+
+        fetchDataAndPopulateTable(); // ovaa funkcija se povikuva za da se inicijalizira tabelata so podatoci i stranici pri vchituvanje na stranicata
+    });
+
+    // Function to sort the table
+    /*Функцијата sortTable(n) е одговорна за динамичко подредување на табелата врз основа на кликнато заглавие на колоната.
+    Како аргумент го прима индексот на колоната n. */
+    function sortTable(n) {
+        let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0; /*Ги иницијализира променливите за табелата, редовите и 
+        насоката на сортирање (sorting direction) */
+        table = document.getElementById("searchTable");
+        switching = true;
+        dir = "asc"; // Set the sorting direction to ascending by default
+
+        /* Се врти (loops) низ редовите на табелата и ги споредува соседните редови врз основа на содржината на наведената колона.
+        Ако треба да се префрли ред врз основа на насоката на сортирање, тој врши префрлување.
+        Продолжува да се врти додека no more switches или додека не стигне до крајот на табелата.*/
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[n];
+                y = rows[i + 1].getElementsByTagName("td")[n];
+
+                // Check if the two rows should switch place
+                if (dir == "asc") {
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+</script>
+
+    
+
+    <script>
+      function searchTable() { // ZA PREBARUVANJE VO TABELATA
+          // ja vrakja vrednosta vnesena vo input poleto so id="searchInput"
+          // trim() go otstranuva sekoe prazno mesto
+          const searchText = document.getElementById('searchInput').value.trim().toLowerCase();
+  
+          // ja prezema tabelata so id="searchTable", a potoa go prezema sekoj red od tabelata
+          const table = document.getElementById('searchTable');
+  
+          // Get the rows of the table
+          const rows = table.getElementsByTagName('tr');
+  
+          // Iterate through all rows and show/hide rows that match the search
+          // ovoj for ciklus se povtoruva niz sekoj red od tabelata
+          for (let i = 0; i < rows.length; i++) {
+              const cells = rows[i].getElementsByTagName('td');// i vo sekoj red gi prezema <td> elementite (kjeliite)
+              let found = false;
+              /* ovoj vnatreshen for ciklus go proveruva tekstot vo sekoja kjelija za da vidi dali nekoja go sodrzhi baraniot tekst.
+              Ako se najde sovpagjanje, znamenceto se postavuva na true i se izleguva od ciklusot */
+              for (let j = 0; j < cells.length; j++) {
+                  const cellText = cells[j].textContent.toLowerCase();
+                  if (cellText.includes(searchText)) {
+                      found = true;
+                      break;
+                  }
+              }
+              // prikazhi ili skrij redovi vrz osnova na rezultatite od prebaruvanjeto
+              if (found) { // ako se najde sovpagjanje, go stava redot da bide vidliv
+                  rows[i].style.display = '';
+              } else { // ako ne najde sovpagjanje, go stava redot da bide nevidliv
+                  rows[i].style.display = 'none';
+              }
+          }
+      }
+  </script>
+  
+  <script>
+    /* https://www.youtube.com/watch?v=JdpmlmhYQew */
+    function exportTableToExcel(tableID, filename = ''){
+        var downloadLink;
+        var dataType = 'application/vnd.ms-excel';
+        var tableSelect = document.getElementById(tableID); // ja izbira tabelata so dadenoto id
+        var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+        
+        // navedete ime na datotekata
+        filename = filename?filename+'.xls':'excel_data.xls'; // ako e dadeno ime na fajlot, go koristi toa ime. Vo sprotivno, standarnoto ime e "excel_data.xls"
+        
+        // Create download link element
+        downloadLink = document.createElement("a"); // noviot anchor <a> element e kreiran za da sluzhi kako vrska za prevzemanje
+        
+        document.body.appendChild(downloadLink);
+        /* Ako prelistuvachot poddrzhuva navigator.msSaveOrOpenBlob (obichno Internet Explorer),
+        toj sozdava Blob (binaren golem objekt - binary large object) shto gi sodrzhi podatocite od tabelata */
+        if(navigator.msSaveOrOpenBlob){
+            var blob = new Blob(['\ufeff', tableHTML], {
+                type: dataType
+            });
+            navigator.msSaveOrOpenBlob( blob, filename);
+        }else{ /* inaku za moderni prelistuvachi, go postavuva atributot href na vrskata za prevzemanje na url-to na podatocite na tabelata */
+            // Create a link to the file
+            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+        
+            // postavuvanje ime na datoteka; download atributot na linkot e postaven na navedenoto ime na datotekata
+            downloadLink.download = filename;
+            
+            //triggering the function
+            downloadLink.click(); // metodot click() se povikuva na downloadLink za da go aktivira prezemanjeto
+        }
+    }
+  </script>
+
+<button id="exportButton" onclick="exportTableToExcel('searchTable', 'table-data')">Export to Excel <i class="fa fa-file-excel-o" style="font-size:20px"></i></button>
+
+    <!-- Gallery Modal -->
+    <div id="galleryModal" class="gallery-modal">
+      <span class="close" onclick="closeGalleryModal()">&times;</span>
+      <div class="modal-content">
+        <!-- Your slideshow gallery code goes here -->
+        <!-- Copy the HTML and CSS from the first file -->
+        <div class="slideshow-container" style="box-sizing: border-box; ">
+
+          <div class="mySlides fade">
+            <div class="numbertext">1 / 5</div>
+            <img src="images/sportoblozuvanje1.jpg" style="width:100%; vertical-align: middle;">
+            <div class="text">Caption Text</div>
+          </div>
+          
+          <div class="mySlides fade">
+            <div class="numbertext">2 / 5</div>
+            <img src="images/sportoblozuvanje2.jpg" style="width:100%; vertical-align: middle;">
+            <div class="text">Caption Two</div>
+          </div>
+          
+          <div class="mySlides fade">
+            <div class="numbertext">3 / 5</div>
+            <img src="images/sportoblozuvanje3.jpg" style="width:100%; vertical-align: middle;">
+            <div class="text">Caption Three</div>
+          </div>
+
+          <div class="mySlides fade">
+            <div class="numbertext">4 / 5</div>
+            <img src="images/sportoblozuvanje4.jpg" style="width:100%; vertical-align: middle;">
+            <div class="text">Caption Text</div>
+          </div>
+
+          <div class="mySlides fade">
+            <div class="numbertext">5 / 5</div>
+            <img src="images/sportoblozuvanje5.jpg" style="width:100%; vertical-align: middle;">
+            <div class="text">Caption Text</div>
+          </div>
+          
+          <a class="prev" onclick="plusSlides(-1)">❮</a>
+          <a class="next" onclick="plusSlides(1)">❯</a>
+          
+          </div>
+          <br>
+          
+          <div style="text-align:center">
+            <span class="dot" onclick="currentSlide(1)"></span> 
+            <span class="dot" onclick="currentSlide(2)"></span> 
+            <span class="dot" onclick="currentSlide(3)"></span> 
+            <span class="dot" onclick="currentSlide(4)"></span>
+            <span class="dot" onclick="currentSlide(5)"></span>
+          </div>
+          
+
+        <script>
+          let slideIndex = 1; // promenliva slideIndex za sledenje na tekovniot slajd
+          showSlides(slideIndex); // funkcijata showSlides se povikuva so prom slideIndex i go pokazhuva prviot slajd koga se vchituva stranicata
+          
+          function plusSlides(n) { // funkcija za dvizhenje niz slajdovite
+            showSlides(slideIndex += n); // se povikuva funkcijata showSlides so slideIndex prom za da se prikazhe azhuriraniot slajd
+          }
+          
+          function currentSlide(n) { // ovaa f-ja se povikuva koga korisnikot kje klikne na edna od tochkite za direktna navigacija do odreden slajd
+            showSlides(slideIndex = n);
+          }
+          
+          function showSlides(n) { // ova e glavnata funkcija za prikazhuvanje na slajdovite
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            let dots = document.getElementsByClassName("dot");
+            if (n > slides.length) {slideIndex = 1}    
+            if (n < 1) {slideIndex = slides.length}
+            for (i = 0; i < slides.length; i++) {
+              slides[i].style.display = "none";  
+            }
+            for (i = 0; i < dots.length; i++) {
+              dots[i].className = dots[i].className.replace(" active", "");
+            }
+            slides[slideIndex-1].style.display = "block";  
+            dots[slideIndex-1].className += " active";
+            /* Go zema indeksot na slajdot kako vlez i gi krie site slajdovi osven onoj so navedeniot indeks. 
+            Isto taka gi azhurira indikatorite za tochki za da go reflektiraat momentalno aktivniot slajd. */
+          }
+          
+        </script>
+      </div>
+    </div>
+
+    <script>
+      function openGalleryModal(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+        document.getElementById('galleryModal').style.display = 'block';
+      }
+      
+      function closeGalleryModal() {
+        document.getElementById('galleryModal').style.display = 'none';
+      }
+    </script>
+    <br>
+
+<footer class="footer" style="bottom: 0%;">
+  <div class="footer-left">
+      <span id="pFooter">Get connected with us on social networks:</span>
+  </div>
+  <div class="footer-right">
+      <a href="https://www.facebook.com/ivona.tevceva" class="icons fa fa-facebook"></a>
+      <a href="https://www.youtube.com/channel/UCR0X-Hm4_OrcfkGtbTRV_dQ" class="icons fa fa-youtube"></a>
+      <a href="https://www.instagram.com/tevchevaaaa/" class="icons fa fa-instagram"></a>
+      <a href="https://www.pinterest.com/itevceva/" class="icons fa fa-pinterest"></a>
+      <a href="https://myaccount.google.com/?hl=mk&utm_source=OGB&utm_medium=act" class="icons fa fa-google"></a>
+  </div>
+  <br>
+  <div id="shop" style="background-color: rgba(0, 0, 0, 0.05); text-align: center; width: 100%;"> © 2024 | Betting shops in Skopje</div>
+</footer>
+
+  </body>
+</html>

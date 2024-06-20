@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="style.css" rel="stylesheet">
+    <title>About</title>
+</head>
+<body>
+    <header>
+        <ul>
+            <li class="header-left"><a id="home" href="home.html">Home</a></li>
+            <li class="header-left"><a id="about" class="activno" href="about.html">About</a></li>
+            <li class="header-left"><a id="contact" href="contact.html">Contact</a></li>
+            <li class="header-right"><a href="#"><img src="images/albania.png" onclick="setLanguage('albanian')"></a></li>
+            <li class="header-right"><a href="#"><img src="images/macedonia.png" onclick="setLanguage('macedonian')"></a></li>
+            <li class="header-right"><a href="#"><img src="images/united kingdom.png" onclick="setLanguage('english')"></a></li>
+        </ul>
+        <div class="video">
+            <iframe class="video" width="928" height="522" src="https://www.youtube.com/embed/flLCZHHl1t0" title="SportLife - Kafe" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+    </header>
+    
+    <footer class="footer" style="bottom: 0%;">
+        <div class="footer-left">
+            <span id="pFooter">Get connected with us on social networks:</span>
+        </div>
+        <div class="footer-right">
+            <a href="https://www.facebook.com/ivona.tevceva" class="icons fa fa-facebook"></a>
+            <a href="https://www.youtube.com/channel/UCR0X-Hm4_OrcfkGtbTRV_dQ" class="icons fa fa-youtube"></a>
+            <a href="https://www.instagram.com/tevchevaaaa/" class="icons fa fa-instagram"></a>
+            <a href="https://www.pinterest.com/itevceva/" class="icons fa fa-pinterest"></a>
+            <a href="https://myaccount.google.com/?hl=mk&utm_source=OGB&utm_medium=act" class="icons fa fa-google"></a>
+        </div>
+        <br>
+        <div id="shop" style="background-color: rgba(0, 0, 0, 0.05); text-align: center; width: 100%;"> © 2024 | Betting shops in Skopje</div>
+    </footer>
+
+    <script>
+        function setLanguage(language) {
+            localStorage.setItem('language', language);
+            if (language === 'macedonian') {
+                translateToMacedonian();
+            } else if (language === 'english') {
+                translateToEnglish();
+            } else if (language === 'albanian') {
+                translateToAlbanian();
+            }
+
+            // Transfer language choice to other HTML files
+            var links = document.querySelectorAll('a[id="home"], a[id="about"], a[id="contact"]');
+            var url = new URL(window.location.href);
+            links.forEach(function(link) {
+                var newUrl = new URL(link.href, url);
+                newUrl.searchParams.set('language', language);
+                link.href = newUrl.href;
+            });
+        }
+
+        function translateToMacedonian() {
+            // Translate content to Macedonian
+            // Header elements
+            document.getElementById('home').textContent = "Дома";
+            document.getElementById('about').textContent = "За нас";
+            document.getElementById('contact').textContent = "Контакт";
+    
+    
+            // Footer elements
+            document.getElementById('pFooter').textContent = "Поврзете се со нас на социјалните мрежи:";
+            document.getElementById('shop').textContent = "© 2024 | Спортски обложувалници во Скопје";
+        }
+
+        function translateToEnglish(){
+            document.getElementById('home').textContent = "Home";
+            document.getElementById('about').textContent = "About";
+            document.getElementById('contact').textContent = "Contact";
+
+            // Footer elements
+            document.getElementById('pFooter').textContent = "Connect with us on social networks:";
+            document.getElementById('shop').textContent = "© 2024 | Betting shops in Skopje";
+        }
+
+        function translateToAlbanian() {
+            // Translate content to Albanian
+            // Header elements
+            document.getElementById('home').textContent = "Kreu";
+            document.getElementById('about').textContent = "Rreth Nesh";
+            document.getElementById('contact').textContent = "Kontakti";
+
+            // Footer elements
+            document.getElementById('pFooter').textContent = "Lidhuni me ne në rrjetet sociale:";
+            document.getElementById('shop').textContent = "© 2024 | Shtëpitë e lojërave të fatit në Shkup";
+        }
+    </script>
+</body>
+</html>
